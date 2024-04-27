@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Test;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Mail\TestContact;
-use Mail;
+/* use Mail; */
+use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
 {

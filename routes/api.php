@@ -18,6 +18,8 @@ use App\Http\Controllers\Test\TestFileController;
 use App\Http\Controllers\TestApiController;
 use App\Http\Controllers\Test\TestConsultasController;
 
+use Illuminate\Support\Facades\Mail;
+
 
 
 
