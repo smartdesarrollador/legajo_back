@@ -34,6 +34,7 @@ class TrabajadorResource extends JsonResource
             'fecha_ingreso' => $this->fecha_ingreso,
             'fecha_egreso' => $this->fecha_egreso,
             'fecha_baja' => $this->fecha_baja,
+            'id_user' =>$this->id_user,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 

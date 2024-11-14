@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use App\Http\Resources\RegimenLaboralResource;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use App\Models\User;
 
 class TrabajadorController extends Controller
 {
@@ -245,5 +246,85 @@ class TrabajadorController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function obtenerDatosTrabajador($user_id)
+    {
+       
+
+        $trabajador = Trabajador::with([
+        'tipoDocumento',
+        'ubigeo',
+        'empleador',
+        'regimenLaboral', 
+        'ocupacion',
+        'tipoContrato',
+        'cargo',
+        'area',
+        'jornadaLaboral',
+        'estadoTrabajador',
+        'nivelEducativo',
+        'regimenSalud',
+        'regimenPensiones',
+        'afp'
+    ])->where('id_user', $user_id)->first();
+
+        return response()->json([
+            'resumen' => [
+                'foto' => '/path/to/default/photo.jpg',
+                'nombres' => [
+                    'primer' => $trabajador->primer,
+                    'segundo' => $trabajador->segundo,
+                    'paterno' => $trabajador->paterno,
+                    'materno' => $trabajador->materno,
+                    'nombreCompleto' => $trabajador->primer . ' ' . 
+                                      $trabajador->segundo . ' ' . 
+                                      $trabajador->paterno . ' ' . 
+                                      $trabajador->materno
+                ],
+                'cargo' => $trabajador->cargo->cargo ?? null,
+                'area' => $trabajador->area->area ?? null,
+            ],
+            'documentos' => [
+                'cargo' => [
+                    'nombre' => $trabajador->cargo->cargo ?? null,
+                    'area' => $trabajador->area->area ?? null,
+                    'division' => 'Operaciones',
+                    'empresa' => $trabajador->empleador->empleador ?? null,
+                    'supervisor' => 'Núñez, Marta',
+                    'sueldoBase' => 'S/ 6,000'
+                ],
+                'contrato' => [
+                    'tipo' => $trabajador->tipoContrato->tipo_contrato ?? null,
+                    'jornadaLaboral' => $trabajador->jornadaLaboral->jornada_laboral ?? null,
+                    'regimenLaboral' => $trabajador->regimenLaboral->regimen_laboral ?? null
+                ],
+                'seguros' => [
+                    'regimenSalud' => $trabajador->regimenSalud->regimen_salud ?? null,
+                    'regimenPensiones' => $trabajador->regimenPensiones->regimen_pensiones ?? null,
+                    'afp' => $trabajador->afp->afp ?? null
+                ],
+                'fechas' => [
+                    'incorporacion' => $trabajador->fecha_ingreso ? date('d \d\e F \d\e Y', strtotime($trabajador->fecha_ingreso)) : null,
+                    'cese' => $trabajador->fecha_egreso,
+                ],
+                'datos_personales' => [
+                    'tipoDocumento' => $trabajador->tipoDocumento->tipo_documento ?? null,
+                    'numeroDocumento' => $trabajador->numero_documento,
+                    'telefonoFijo' => $trabajador->telefono,
+                    'celular' => $trabajador->celular,
+                    'email' => $trabajador->correo,
+                    'fechaNacimiento' => $trabajador->fecha_nacimiento ? date('d-m-Y', strtotime($trabajador->fecha_nacimiento)) : null,
+                    'direccion' => $trabajador->direccion,
+                    'nivelEducativo' => $trabajador->nivelEducativo->nivel_educativo ?? null,
+                    'esDiscapacitado' => $trabajador->es_discapacitado ? 'Sí' : 'No',
+                    'esSindicalizado' => $trabajador->es_sindicalizado ? 'Sí' : 'No'
+                ],
+                'vacaciones' => [
+                    'saldoVacaciones' => $trabajador->saldo_inicial_vacaciones ?? '0 días',
+                    'diasTomados' => '0 días'
+                ]
+            ]
+        ]);
     }
 }

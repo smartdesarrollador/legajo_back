@@ -8,3 +8,5 @@ Route::apiResource('trabajadores', TrabajadorController::class);
 Route::get('/trabajador/{id}/regimen-laboral', [TrabajadorController::class, 'getRegimenLaboral']);
 
 Route::post('/trabajadores/create', [TrabajadorController::class, 'createTrabajador']);
+
+Route::get('/trabajador/{id}', [TrabajadorController::class, 'obtenerDatosTrabajador']);
