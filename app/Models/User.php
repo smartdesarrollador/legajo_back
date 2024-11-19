@@ -10,6 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 use App\Models\Rol;
+use App\Models\Trabajador;
 
 //use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -68,9 +69,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(Empleador::class, 'id_user');
     }
 
-    public function Trabajador()
+    public function trabajador()
     {
-        return $this->hasOne(Trabajador::class);
+        return $this->hasOne(Trabajador::class, 'id_user', 'id');
     }
 
     

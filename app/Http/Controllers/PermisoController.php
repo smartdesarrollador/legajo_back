@@ -7,7 +7,15 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PermisosResource;
 use App\Models\Permiso;
+use Carbon\Carbon;
+use App\Models\Trabajador;
+use Illuminate\Support\Facades\Validator;
 
+use Exception;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
+use Illuminate\Support\Facades\Auth;
 
 class PermisoController extends Controller
 {
@@ -73,5 +81,109 @@ class PermisoController extends Controller
 
         // Retornar la respuesta con el recurso creado
         return new PermisosResource($permiso);
+    }
+
+    public function consulta_permiso(Request $request)
+    {
+        $request->validate([
+            'fecha_desde' => 'required|date',
+            'fecha_hasta' => 'required|date|after_or_equal:fecha_desde',
+            'id_user' => 'required|exists:users,id'
+        ]);
+
+        // Primero obtenemos el trabajador asociado al usuario
+        $trabajador = Trabajador::where('id_user', $request->id_user)->first();
+
+        if (!$trabajador) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el trabajador asociado al usuario'
+            ], 404);
+        }
+
+        $permisos = Permiso::with(['trabajador', 'area', 'estado_permiso'])
+            ->where('id_trabajador', $trabajador->id_trabajador)
+            ->whereBetween('fecha_inicio', [$request->fecha_desde, $request->fecha_hasta])
+            ->get()
+            ->map(function ($permiso) {
+                return [
+                    'motivo' => $permiso->motivo,
+                    'fecha_inicio' => date('d/m/Y', strtotime($permiso->fecha_inicio)),
+                    'fecha_final' => date('d/m/Y', strtotime($permiso->fecha_fin)),
+                    'horas' => $permiso->horas,
+                    'estado' => [
+                        'id' => $permiso->estado_permiso->id_estado_permiso,
+                        'nombre' => $permiso->estado_permiso->estado_permiso,
+                        'color' => $permiso->estado_permiso->id_estado_permiso == 1 ? 'green' : 'red'
+                    ],
+                    'ver_acuerdo' => [
+                        'tiene_documento' => !is_null($permiso->adjunto),
+                        'url' => !is_null($permiso->adjunto) ? "/api/permisos/{$permiso->id_permiso}/documento" : null
+                    ],
+                    'trabajador' => [
+                        'id' => $permiso->trabajador->id_trabajador,
+                        'nombre_completo' => $permiso->trabajador->primer . ' ' . $permiso->trabajador->paterno,
+                        'area' => $permiso->area ? $permiso->area->area : null
+                    ]
+                ];
+            });
+
+        return response()->json($permisos,200);
+    }
+
+    public function crear_permiso(Request $request)
+    {
+        try {
+            // Validación de los datos recibidos
+            $validator = Validator::make($request->all(), [
+                'permiso' => 'required|string|max:200',
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+                'horas' => 'required|integer',
+                'id_area' => 'required|exists:area,id_area',
+                'id_trabajador' => 'required|exists:trabajador,id_trabajador',
+                'jefe_inmediato' => 'required|string|max:200',
+                'motivo' => 'required|string|max:500',
+                'adjunto' => 'nullable|file'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 400);
+            }
+
+            // Procesar el archivo adjunto si existe
+            $adjunto = null;
+            if ($request->hasFile('adjunto')) {
+                $adjunto = $request->file('adjunto')->getContent();
+            }
+
+            // Crear el nuevo permiso
+            $permiso = new Permiso();
+            $permiso->permiso = $request->permiso;
+            $permiso->fecha_inicio = $request->fecha_inicio;
+            $permiso->fecha_fin = $request->fecha_fin;
+            $permiso->horas = $request->horas;
+            $permiso->id_area = $request->id_area;
+            $permiso->id_trabajador = $request->id_trabajador;
+            $permiso->jefe_inmediato = $request->jefe_inmediato;
+            $permiso->motivo = $request->motivo;
+            $permiso->adjunto = $adjunto;
+            $permiso->id_estado_permiso = 1; // Estado inicial (pendiente)
+            
+            $permiso->save();
+
+            return response()->json($permiso, 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error al crear el permiso',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

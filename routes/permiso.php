@@ -13,4 +13,11 @@ Route::prefix('permisos')->group(function () {
 
     // Ruta para crear un nuevo permiso
     Route::post('/', [PermisoController::class, 'store'])->name('permisos.store');
+
+    
 });
+
+Route::get('consulta-permiso', [PermisoController::class, 'consulta_permiso']);
+
+    Route::post('crear-permiso', [PermisoController::class, 'crear_permiso']);
+

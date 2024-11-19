@@ -34,4 +34,9 @@ class Permiso extends Model
     {
         return $this->belongsTo(EstadoPermiso::class, 'id_estado_permiso');
     }
+
+    public function estado_permiso()
+    {
+        return $this->belongsTo(EstadoPermiso::class, 'id_estado_permiso');
+    }
 }

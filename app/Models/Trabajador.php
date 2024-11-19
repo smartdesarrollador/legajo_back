@@ -19,6 +19,7 @@ use App\Models\regimenPensiones;
 use App\Models\Afp;
 use App\Models\RegimenLaboral;
 use App\Models\Contrato;
+use App\Models\User;
 
 
 class Trabajador extends Model
@@ -124,5 +125,10 @@ class Trabajador extends Model
     public function contrato()
     {
         return $this->belongsTo(Contrato::class, 'id_contrato');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user', 'id');
     }
 }
