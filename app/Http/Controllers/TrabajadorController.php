@@ -11,6 +11,7 @@ use App\Http\Resources\RegimenLaboralResource;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TrabajadorController extends Controller
 {
@@ -55,6 +56,27 @@ class TrabajadorController extends Controller
             'message' => 'Error al obtener la lista de trabajadores.',
             'error' => $e->getMessage()
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
+
+public function getTrabajadorByIdUser($id_user)
+{
+    try {
+        $trabajador = Trabajador::where('id_user', $id_user)->firstOrFail();
+
+        return response()->json($trabajador, 200);
+
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Trabajador no encontrado para el usuario especificado'
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Error al obtener los datos del trabajador',
+            'error' => $e->getMessage()
+        ], 500);
     }
 }
 
