@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\empleador;
-use App\Models\regimenLaboral;
+use App\Models\Empleador;
+use App\Models\RegimenLaboral;
 
 class EmpleadorRegimenLaboral extends Model
 {

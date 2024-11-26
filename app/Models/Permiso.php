@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\Trabajador;
 use App\Models\Area;
+use App\Models\EstadoPermiso;
+
 
 class Permiso extends Model
 {

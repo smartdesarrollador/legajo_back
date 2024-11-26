@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use App\Models\EmpleadorRegimenLaboral;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EmpleadorController extends Controller
 {
@@ -56,6 +57,28 @@ public function show($id)
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
+
+public function getEmpleadorByIdUser($id_user)
+{
+    try {
+        $trabajador = Empleador::where('id_user', $id_user)->firstOrFail();
+
+        return response()->json($trabajador, 200);
+
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Trabajador no encontrado para el usuario especificado'
+        ], 404);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Error al obtener los datos del trabajador',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 
 
     // Crear un nuevo empleador

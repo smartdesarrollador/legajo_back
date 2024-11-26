@@ -49,3 +49,5 @@ Route::get('/empleadores/search_by_type', [EmpleadorController::class, 'searchBy
 
 // Buscar empleadores con filtros
 Route::get('/empleadores/search', [EmpleadorController::class, 'search']);
+
+Route::get('registro-empleador/{id_user}', [EmpleadorController::class, 'getEmpleadorByIdUser']);

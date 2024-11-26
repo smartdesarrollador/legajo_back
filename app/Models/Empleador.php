@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\Documento;
 use App\Models\Trabajador;
-use App\Models\sector;
-use App\Models\ubigeo;
+use App\Models\Sector;
+use App\Models\Ubigeo;
 use App\Models\ActividadEconomica;
 use App\Models\User;
 use App\Models\TipoEmpleador;

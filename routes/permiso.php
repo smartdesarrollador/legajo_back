@@ -21,3 +21,7 @@ Route::get('consulta-permiso', [PermisoController::class, 'consulta_permiso']);
 
     Route::post('crear-permiso', [PermisoController::class, 'crear_permiso']);
 
+
+    //ruta entorno empresa
+    Route::put('/editar-permisos/{id}', [PermisoController::class, 'editar_permiso']);
+

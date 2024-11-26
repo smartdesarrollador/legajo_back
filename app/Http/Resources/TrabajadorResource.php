@@ -78,7 +78,7 @@ class TrabajadorResource extends JsonResource
             'regimen_pensiones' => new RegimenPensionesResource($this->whenLoaded('regimenPensiones')),
 
             // Relación con AFP
-            'afp' => new AFPResource($this->whenLoaded('afp')),
+            'afp' => new AfpResource($this->whenLoaded('afp')),
 
             // Relación con Contrato
             'contrato' => new ContratoResource($this->whenLoaded('contrato')),

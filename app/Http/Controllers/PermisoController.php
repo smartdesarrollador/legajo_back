@@ -17,6 +17,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Area;
+use App\Models\EstadoPermiso;
+use Illuminate\Support\Facades\DB;
+
+
 class PermisoController extends Controller
 {
     public function index(Request $request)
@@ -182,6 +187,99 @@ class PermisoController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Error al crear el permiso',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+//Metodo Entorno Empresa
+    public function editar_permiso(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Validar los datos de entrada
+            $request->validate([
+                'fecha_inicio' => 'required|date',
+                'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+                'horas' => 'required|integer|min:1',
+                'motivo' => 'required|string|max:500',
+                'id_area' => 'required|exists:area,id_area',
+                'id_trabajador' => 'required|exists:trabajador,id_trabajador',
+                'jefe_inmediato' => 'required|string|max:200',
+                'id_estado_permiso' => 'required|exists:estado_permiso,id_estado_permiso',
+            ], [
+                'fecha_inicio.required' => 'La fecha de inicio es requerida',
+                'fecha_fin.required' => 'La fecha de fin es requerida',
+                'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio',
+                'horas.required' => 'El número de horas es requerido',
+                'horas.integer' => 'Las horas deben ser un número entero',
+                'horas.min' => 'Las horas deben ser al menos 1',
+                'motivo.required' => 'El motivo es requerido',
+                'id_area.required' => 'El área es requerida',
+                'id_area.exists' => 'El área seleccionada no existe',
+                'id_trabajador.required' => 'El trabajador es requerido',
+                'id_trabajador.exists' => 'El trabajador seleccionado no existe',
+                'jefe_inmediato.required' => 'El jefe inmediato es requerido',
+                'id_estado_permiso.required' => 'El estado del permiso es requerido',
+                'id_estado_permiso.exists' => 'El estado del permiso seleccionado no existe'
+            ]);
+
+            // Buscar el permiso existente
+            $permiso = Permiso::findOrFail($id);
+
+            // Actualizar el permiso
+            $permiso->update([
+                'permiso' => 'Permiso ' . Carbon::parse($request->fecha_inicio)->format('d/m/Y'),
+                'fecha_inicio' => $request->fecha_inicio,
+                'fecha_fin' => $request->fecha_fin,
+                'horas' => $request->horas,
+                'id_area' => $request->id_area,
+                'id_trabajador' => $request->id_trabajador,
+                'jefe_inmediato' => $request->jefe_inmediato,
+                'motivo' => $request->motivo,
+                'id_estado_permiso' => $request->id_estado_permiso,
+            ]);
+
+            // Si hay un archivo adjunto, procesarlo
+            if ($request->hasFile('adjunto')) {
+                $adjunto = $request->file('adjunto');
+                $permiso->adjunto = $adjunto->get();
+                $permiso->save();
+            }
+
+            DB::commit();
+
+            // Cargar las relaciones necesarias y retornar el recurso
+            $permiso->load(['area', 'trabajador', 'estadoPermiso']);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Permiso actualizado correctamente',
+                'data' => new PermisosResource($permiso)
+            ], 200);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Permiso no encontrado'
+            ], 404);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error al actualizar el permiso',
                 'error' => $e->getMessage()
             ], 500);
         }
