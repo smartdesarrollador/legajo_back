@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\trabajador;
-use App\Models\tipoMovimiento;
+use App\Models\Trabajador;
+use App\Models\TipoMovimiento;
 
 class HistorialVacaciones extends Model
 {
