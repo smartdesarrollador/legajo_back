@@ -48,11 +48,7 @@ class LicenciaController extends Controller
             ->first();
 
         if (!$trabajador) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Trabajador no encontrado',
-                'data' => null
-            ], 404);
+            return response()->json([], 404);
         }
 
         // Consulta principal con joins y filtros
@@ -77,29 +73,16 @@ class LicenciaController extends Controller
                     'fecha_fin' => date('d/m/Y', strtotime($licencia->fecha_fin)),
                     'dias' => $licencia->dias,
                     'estado' => $licencia->estado,
-                    'ver_acuerdo' => url('/api/licencias/' . $licencia->id_licencia) // Cambiado a una URL directa
+                    'ver_acuerdo' => url('/api/licencias/' . $licencia->id_licencia)
                 ];
             });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Licencias consultadas exitosamente',
-            'data' => $licencias
-        ], 200);
+        return response()->json($licencias, 200);
 
     } catch (ValidationException $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error de validación',
-            'errors' => $e->errors()
-        ], 422);
+        return response()->json([], 422);
     } catch (Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error al consultar licencias',
-            'error' => $e->getMessage()
-        ], 500);
+        return response()->json([], 500);
     }
 }
-  
 }
