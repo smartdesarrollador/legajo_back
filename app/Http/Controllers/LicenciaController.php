@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\Licencia;
 use App\Http\Resources\LicenciaResource;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class LicenciaController extends Controller
 {
@@ -28,102 +32,74 @@ class LicenciaController extends Controller
         }
     }
 
-    // Crear una nueva licencia
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'fecha_emision' => 'required|date',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date',
-            'jefe_vacaciones' => 'required|string|max:255',
-            'motivo' => 'required|string|max:255',
-            'id_area' => 'required|exists:areas,id_area',
-            'id_trabajador' => 'required|exists:trabajadores,id_trabajador',
-            'id_estado_permiso' => 'required|exists:estado_permisos,id_estado_permiso',
+   public function consulta_licencia(Request $request)
+{
+    try {
+        // Validar los parámetros del request
+        $request->validate([
+            'fecha_desde' => 'required|date',
+            'fecha_hasta' => 'required|date',
+            'id_user' => 'required|integer'
         ]);
 
-        try {
-            $licencia = Licencia::create($validatedData);
-            return response()->json([
-                'success' => true,
-                'message' => 'Licencia creada exitosamente.',
-                'data' => new LicenciaResource($licencia)
-            ], Response::HTTP_CREATED);
-        } catch (\Exception $e) {
+        // Obtener el trabajador usando el id_user
+        $trabajador = DB::table('trabajador')
+            ->where('id_user', $request->id_user)
+            ->first();
+
+        if (!$trabajador) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear la licencia.',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                'message' => 'Trabajador no encontrado',
+                'data' => null
+            ], 404);
         }
-    }
 
-    // Mostrar una licencia específica
-    public function show($id)
-    {
-        try {
-            $licencia = Licencia::with('area', 'trabajador', 'estadoPermiso')->findOrFail($id);
-            return response()->json([
-                'success' => true,
-                'message' => 'Licencia obtenida exitosamente.',
-                'data' => new LicenciaResource($licencia)
-            ], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al obtener la licencia.',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
+        // Consulta principal con joins y filtros
+        $licencias = DB::table('licencia')
+            ->join('estado_permiso', 'licencia.id_estado_permiso', '=', 'estado_permiso.id_estado_permiso')
+            ->where('licencia.id_trabajador', $trabajador->id_trabajador)
+            ->whereBetween('licencia.fecha_inicio', [$request->fecha_desde, $request->fecha_hasta])
+            ->select([
+                'licencia.id_licencia',
+                'licencia.motivo',
+                'licencia.fecha_inicio',
+                'licencia.fecha_fin',
+                DB::raw('DATEDIFF(licencia.fecha_fin, licencia.fecha_inicio) + 1 as dias'),
+                'estado_permiso.estado_permiso as estado'
+            ])
+            ->get()
+            ->map(function ($licencia) {
+                return [
+                    'id' => $licencia->id_licencia,
+                    'motivo' => $licencia->motivo,
+                    'fecha_inicio' => date('d/m/Y', strtotime($licencia->fecha_inicio)),
+                    'fecha_fin' => date('d/m/Y', strtotime($licencia->fecha_fin)),
+                    'dias' => $licencia->dias,
+                    'estado' => $licencia->estado,
+                    'ver_acuerdo' => url('/api/licencias/' . $licencia->id_licencia) // Cambiado a una URL directa
+                ];
+            });
 
-    // Actualizar una licencia
-    public function update(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'fecha_emision' => 'required|date',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'required|date',
-            'jefe_vacaciones' => 'required|string|max:255',
-            'motivo' => 'required|string|max:255',
-            'id_area' => 'required|exists:areas,id_area',
-            'id_trabajador' => 'required|exists:trabajadores,id_trabajador',
-            'id_estado_permiso' => 'required|exists:estado_permisos,id_estado_permiso',
-        ]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Licencias consultadas exitosamente',
+            'data' => $licencias
+        ], 200);
 
-        try {
-            $licencia = Licencia::findOrFail($id);
-            $licencia->update($validatedData);
-            return response()->json([
-                'success' => true,
-                'message' => 'Licencia actualizada exitosamente.',
-                'data' => new LicenciaResource($licencia)
-            ], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar la licencia.',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error de validación',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al consultar licencias',
+            'error' => $e->getMessage()
+        ], 500);
     }
-
-    // Eliminar una licencia
-    public function destroy($id)
-    {
-        try {
-            $licencia = Licencia::findOrFail($id);
-            $licencia->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Licencia eliminada exitosamente.'
-            ], Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la licencia.',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
+}
+  
 }

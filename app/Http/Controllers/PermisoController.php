@@ -89,6 +89,7 @@ class PermisoController extends Controller
         return new PermisosResource($permiso);
     }
 
+    
     public function consulta_permiso(Request $request)
     {
         $request->validate([

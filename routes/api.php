@@ -9,6 +9,7 @@ require __DIR__.'/empleador.php';
 require __DIR__.'/trabajador.php';
 require __DIR__.'/contrato.php';
 require __DIR__.'/permiso.php';
+require __DIR__.'/licencia.php';
 
 
 use App\Http\Controllers\AccionController;
@@ -45,7 +46,6 @@ use App\Http\Controllers\HistoriaController;
 use App\Http\Controllers\HistorialVacacionesController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\JornadaLaboralController;
-use App\Http\Controllers\LicenciaController;
 use App\Http\Controllers\MotivoBajaController;
 use App\Http\Controllers\NivelEducativoController;
 use App\Http\Controllers\NotificacionController;
@@ -127,7 +127,7 @@ Route::apiResource('historias', HistoriaController::class);
 Route::apiResource('historial-vacaciones', HistorialVacacionesController::class);
 Route::apiResource('instructores', InstructorController::class);
 Route::apiResource('jornadas-laborales', JornadaLaboralController::class);
-Route::apiResource('licencias', LicenciaController::class);
+
 Route::apiResource('motivos-baja', MotivoBajaController::class);
 Route::apiResource('niveles-educativos', NivelEducativoController::class);
 Route::apiResource('notificaciones', NotificacionController::class);
