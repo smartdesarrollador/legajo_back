@@ -10,6 +10,7 @@ require __DIR__.'/trabajador.php';
 require __DIR__.'/contrato.php';
 require __DIR__.'/permiso.php';
 require __DIR__.'/licencia.php';
+require __DIR__.'/vacaciones.php';
 
 
 use App\Http\Controllers\AccionController;
@@ -70,7 +71,7 @@ use App\Http\Controllers\TipoPoliticaController;
 use App\Http\Controllers\TipoVacacionesController;
 use App\Http\Controllers\UbigeoController;
 use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\VacacionesController;
+
 use App\Http\Controllers\Test\ContactController;
 
 use Illuminate\Support\Facades\Mail;
@@ -152,7 +153,7 @@ Route::apiResource('tipos-politica', TipoPoliticaController::class);
 Route::apiResource('tipos-vacaciones', TipoVacacionesController::class);
 Route::apiResource('ubigeos', UbigeoController::class);
 Route::apiResource('usuarios', UsuarioController::class);
-Route::apiResource('vacaciones', VacacionesController::class);
+
 
 
 

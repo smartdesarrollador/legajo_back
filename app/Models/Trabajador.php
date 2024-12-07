@@ -20,6 +20,7 @@ use App\Models\Afp;
 use App\Models\RegimenLaboral;
 use App\Models\Contrato;
 use App\Models\User;
+use App\Models\SaldoVacaciones;
 
 
 class Trabajador extends Model
@@ -130,5 +131,10 @@ class Trabajador extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user', 'id');
+    }
+
+    public function saldoVacaciones()
+    {
+        return $this->hasOne(SaldoVacaciones::class, 'id_trabajador');
     }
 }

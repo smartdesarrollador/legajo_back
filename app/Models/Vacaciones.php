@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Models\Trabajador;
 use App\Models\TipoVacaciones;
+use App\Models\EstadoAprobacion;
 
 class Vacaciones extends Model
 {
@@ -27,5 +28,10 @@ class Vacaciones extends Model
     public function tipoVacaciones()
     {
         return $this->belongsTo(TipoVacaciones::class, 'id_tipo_vacaciones');
+    }
+
+    public function estadoAprobacion()
+    {
+        return $this->hasOne(EstadoAprobacion::class, 'id_vacaciones');
     }
 }
