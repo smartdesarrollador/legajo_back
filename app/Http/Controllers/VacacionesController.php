@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Vacaciones;
+use App\Models\TipoVacaciones;
+use App\Models\Trabajador;
 use App\Http\Resources\VacacionesResource;
 use Illuminate\Http\Response;
 
@@ -207,10 +210,17 @@ class VacacionesController extends Controller
                 'id_user' => 'required|exists:users,id'
             ]);
 
-            // Construir la consulta base
+            // Primero obtenemos el id_empleador basado en el id_user
+            $empleador = DB::table('empleador')->where('id_user', $validatedData['id_user'])->first();
+            
+            if (!$empleador) {
+                return response()->json(['error' => 'Empleador no encontrado'], Response::HTTP_NOT_FOUND);
+            }
+
+            // Construir la consulta base incluyendo la relación con empleador
             $query = Vacaciones::with(['tipoVacaciones', 'trabajador', 'estadoAprobacion'])
-                ->whereHas('trabajador', function($q) use ($validatedData) {
-                    $q->where('id_user', $validatedData['id_user']);
+                ->whereHas('trabajador', function($q) use ($empleador) {
+                    $q->where('id_empleador', $empleador->id_empleador);
                 });
 
             // Aplicar filtros si se proporcionaron
@@ -270,6 +280,29 @@ class VacacionesController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getTiposVacaciones()
+    {
+        try {
+            $tipos = TipoVacaciones::select('id_tipo_vacaciones as id', 'tipo_vacaciones as nombre')->get();
+            return response()->json($tipos);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getTrabajadores()
+    {
+        try {
+            $trabajadores = Trabajador::select(
+                'id_trabajador as id',
+                DB::raw("CONCAT(primer, ' ', COALESCE(segundo, ''), ' ', paterno, ' ', materno) as nombre_completo")
+            )->get();
+            return response()->json($trabajadores);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 }

@@ -154,6 +154,9 @@ Route::apiResource('tipos-vacaciones', TipoVacacionesController::class);
 Route::apiResource('ubigeos', UbigeoController::class);
 Route::apiResource('usuarios', UsuarioController::class);
 
+/* Route::get('/tipos-vacaciones', [VacacionesController::class, 'getTiposVacaciones']);
+Route::get('/trabajadores', [VacacionesController::class, 'getTrabajadores']); */
+
 
 
 
