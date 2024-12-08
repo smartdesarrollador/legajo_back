@@ -85,4 +85,162 @@ class LicenciaController extends Controller
         return response()->json([], 500);
     }
 }
+
+public function consulta_licencias_trabajadores(Request $request)
+{
+    try {
+        // Validar los parámetros del request
+        $request->validate([
+            'id_user' => 'required|integer',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date',
+            'id_area' => 'nullable|integer',
+            'id_trabajador' => 'nullable|integer'
+        ]);
+
+        // Obtener el empleador usando el id_user
+        $empleador = DB::table('empleador')
+            ->where('id_user', $request->id_user)
+            ->first();
+
+        if (!$empleador) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Empleador no encontrado'
+            ], 404);
+        }
+
+        // Iniciar la consulta base
+        $query = DB::table('licencia')
+            ->join('trabajador', 'licencia.id_trabajador', '=', 'trabajador.id_trabajador')
+            ->join('estado_permiso', 'licencia.id_estado_permiso', '=', 'estado_permiso.id_estado_permiso')
+            ->join('area', 'licencia.id_area', '=', 'area.id_area')
+            ->where('trabajador.id_empleador', $empleador->id_empleador);
+
+        // Aplicar filtros si existen
+        if ($request->fecha_desde && $request->fecha_hasta) {
+            $query->whereBetween('licencia.fecha_inicio', [$request->fecha_desde, $request->fecha_hasta]);
+        }
+
+        if ($request->id_area) {
+            $query->where('licencia.id_area', $request->id_area);
+        }
+
+        if ($request->id_trabajador) {
+            $query->where('licencia.id_trabajador', $request->id_trabajador);
+        }
+
+        // Seleccionar los campos necesarios
+        $licencias = $query->select([
+            'licencia.id_licencia',
+            'licencia.motivo',
+            'licencia.fecha_inicio',
+            'licencia.fecha_fin',
+            DB::raw('DATEDIFF(licencia.fecha_fin, licencia.fecha_inicio) + 1 as dias'),
+            'estado_permiso.estado_permiso as estado',
+            'trabajador.paterno',
+            'trabajador.materno',
+            'trabajador.primer',
+            'trabajador.segundo',
+            'area.area'
+        ])
+        ->get()
+        ->map(function ($licencia) {
+            return [
+                'id' => $licencia->id_licencia,
+                'trabajador' => trim($licencia->paterno . ' ' . $licencia->materno . ' ' . 
+                               $licencia->primer . ' ' . $licencia->segundo),
+                'area' => $licencia->area,
+                'motivo' => $licencia->motivo,
+                'fecha_inicio' => date('d/m/Y', strtotime($licencia->fecha_inicio)),
+                'fecha_fin' => date('d/m/Y', strtotime($licencia->fecha_fin)),
+                'dias' => $licencia->dias,
+                'estado' => $licencia->estado,
+                'ver_acuerdo' => url('/api/licencias/' . $licencia->id_licencia)
+            ];
+        });
+
+        return response()->json($licencias, 200);
+
+    } catch (ValidationException $e) {
+        return response()->json($e->errors(), 422);
+    } catch (Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+/**
+ * Obtener trabajadores por empleador
+ */
+public function obtener_trabajadores(Request $request)
+{
+    try {
+        $request->validate([
+            'id_user' => 'required|integer'
+        ]);
+
+        // Obtener el empleador
+        $empleador = DB::table('empleador')
+            ->where('id_user', $request->id_user)
+            ->first();
+
+        if (!$empleador) {
+            return response()->json([], 404);
+        }
+
+        // Obtener trabajadores del empleador
+        $trabajadores = DB::table('trabajador')
+            ->where('id_empleador', $empleador->id_empleador)
+            ->select([
+                'id_trabajador as value',
+                DB::raw("CONCAT(paterno, ' ', materno, ' ', primer, ' ', segundo) as label")
+            ])
+            ->get();
+
+        return response()->json($trabajadores);
+
+    } catch (Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([], 500);
+    }
+}
+
+/**
+ * Obtener áreas por empleador
+ */
+public function obtener_areas(Request $request)
+{
+    try {
+        $request->validate([
+            'id_user' => 'required|integer'
+        ]);
+
+        // Obtener el empleador
+        $empleador = DB::table('empleador')
+            ->where('id_user', $request->id_user)
+            ->first();
+
+        if (!$empleador) {
+            return response()->json([], 404);
+        }
+
+        // Obtener áreas asociadas a los trabajadores del empleador
+        $areas = DB::table('area')
+            ->join('trabajador', 'area.id_area', '=', 'trabajador.id_area')
+            ->where('trabajador.id_empleador', $empleador->id_empleador)
+            ->select([
+                'area.id_area as value',
+                'area.area as label'
+            ])
+            ->distinct()
+            ->get();
+
+        return response()->json($areas);
+
+    } catch (Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([], 500);
+    }
+}
 }
