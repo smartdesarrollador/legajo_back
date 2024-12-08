@@ -93,8 +93,6 @@ class PermisoController extends Controller
     public function consulta_permiso(Request $request)
     {
         $request->validate([
-            'fecha_desde' => 'required|date',
-            'fecha_hasta' => 'required|date|after_or_equal:fecha_desde',
             'id_user' => 'required|exists:users,id'
         ]);
 
@@ -108,10 +106,15 @@ class PermisoController extends Controller
             ], 404);
         }
 
-        $permisos = Permiso::with(['trabajador', 'area', 'estado_permiso'])
-            ->where('id_trabajador', $trabajador->id_trabajador)
-            ->whereBetween('fecha_inicio', [$request->fecha_desde, $request->fecha_hasta])
-            ->get()
+        $query = Permiso::with(['trabajador', 'area', 'estado_permiso'])
+            ->where('id_trabajador', $trabajador->id_trabajador);
+
+        // Aplicar filtros de fecha solo si están presentes
+        if ($request->fecha_desde && $request->fecha_hasta) {
+            $query->whereBetween('fecha_inicio', [$request->fecha_desde, $request->fecha_hasta]);
+        }
+
+        $permisos = $query->get()
             ->map(function ($permiso) {
                 return [
                     'motivo' => $permiso->motivo,
