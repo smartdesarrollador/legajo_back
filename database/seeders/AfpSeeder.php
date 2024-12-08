@@ -14,8 +14,16 @@ class AfpSeeder extends Seeder
     public function run(): void
     {
         DB::table('afp')->insert([
-        ['afp' => 'Prima', 'created_at' => now(), 'updated_at' => now()],
-        ['afp' => 'Integra', 'created_at' => now(), 'updated_at' => now()],
-    ]);
+            [
+                'afp' => 'Prima',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'afp' => 'Integra', 
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+        ]);
     }
 }

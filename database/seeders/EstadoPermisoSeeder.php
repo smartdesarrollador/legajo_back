@@ -14,8 +14,56 @@ class EstadoPermisoSeeder extends Seeder
     public function run(): void
     {
         DB::table('estado_permiso')->insert([
-        ['estado_permiso' => 'Aprobado', 'created_at' => now(), 'updated_at' => now()],
-        ['estado_permiso' => 'Pendiente', 'created_at' => now(), 'updated_at' => now()],
-    ]);
+            [
+                'estado_permiso' => 'Aprobado',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Pendiente',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Rechazado',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'En Revisión',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Cancelado',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Vencido',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'En Proceso',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Suspendido',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Anulado',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'estado_permiso' => 'Finalizado',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ]);
     }
 }

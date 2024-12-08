@@ -14,13 +14,31 @@ class AreaSeeder extends Seeder
     public function run(): void
     {
         DB::table('area')->insert([
-        ['area' => 'Recursos Humanos', 
-        'created_at' => now(), 
-        'updated_at' => now()],
-
-        ['area' => 'Finanzas', 
-        'created_at' => now(), 
-        'updated_at' => now()],
+            [
+                'area' => 'Recursos Humanos', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'area' => 'Finanzas', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'area' => 'Tecnología de la Información', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'area' => 'Marketing y Ventas', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ],
+            [
+                'area' => 'Operaciones', 
+                'created_at' => now(), 
+                'updated_at' => now()
+            ]
         ]);
     }
 }
