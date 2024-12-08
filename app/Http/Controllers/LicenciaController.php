@@ -35,11 +35,11 @@ class LicenciaController extends Controller
    public function consulta_licencia(Request $request)
 {
     try {
-        // Validar los parámetros del request
+        // Validar solo el id_user como requerido
         $request->validate([
-            'fecha_desde' => 'required|date',
-            'fecha_hasta' => 'required|date',
-            'id_user' => 'required|integer'
+            'id_user' => 'required|integer',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date'
         ]);
 
         // Obtener el trabajador usando el id_user
@@ -51,12 +51,17 @@ class LicenciaController extends Controller
             return response()->json([], 404);
         }
 
-        // Consulta principal con joins y filtros
-        $licencias = DB::table('licencia')
+        // Consulta principal con joins
+        $query = DB::table('licencia')
             ->join('estado_permiso', 'licencia.id_estado_permiso', '=', 'estado_permiso.id_estado_permiso')
-            ->where('licencia.id_trabajador', $trabajador->id_trabajador)
-            ->whereBetween('licencia.fecha_inicio', [$request->fecha_desde, $request->fecha_hasta])
-            ->select([
+            ->where('licencia.id_trabajador', $trabajador->id_trabajador);
+
+        // Aplicar filtros de fecha solo si están presentes
+        if ($request->fecha_desde && $request->fecha_hasta) {
+            $query->whereBetween('licencia.fecha_inicio', [$request->fecha_desde, $request->fecha_hasta]);
+        }
+
+        $licencias = $query->select([
                 'licencia.id_licencia',
                 'licencia.motivo',
                 'licencia.fecha_inicio',

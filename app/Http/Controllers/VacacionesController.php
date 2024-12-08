@@ -148,7 +148,7 @@ class VacacionesController extends Controller
                     $q->where('id_user', $validatedData['id_user']);
                 });
 
-            // Aplicar filtros si se proporcionaron
+            // Aplicar filtros solo si están presentes
             if ($request->filled('fecha_desde')) {
                 $query->where('fecha_inicio', '>=', $validatedData['fecha_desde']);
             }
@@ -182,11 +182,6 @@ class VacacionesController extends Controller
                         'fecha_aprobacion' => $vacacion->estadoAprobacion->fecha_aprobacion,
                         'aprobado_por' => $vacacion->estadoAprobacion->aprobado_por,
                         'comentario' => $vacacion->estadoAprobacion->comentario
-                    ] : null,
-                    'saldo_vacaciones' => $vacacion->trabajador->saldoVacaciones ? [
-                        'dias_acumulados' => $vacacion->trabajador->saldoVacaciones->dias_acumulados,
-                        'dias_usados' => $vacacion->trabajador->saldoVacaciones->dias_usados,
-                        'saldo_actual' => $vacacion->trabajador->saldoVacaciones->saldo_vacaciones
                     ] : null
                 ];
             });
