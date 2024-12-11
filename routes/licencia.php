@@ -19,3 +19,7 @@ Route::get('licencia/obtener-trabajadores', [LicenciaController::class, 'obtener
 
 // Obtener áreas por empleador
 Route::get('licencia/obtener-areas', [LicenciaController::class, 'obtener_areas']);
+
+// Crear licencia
+Route::post('/licencia/crear', [LicenciaController::class, 'crear_licencia']);
+

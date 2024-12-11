@@ -248,4 +248,55 @@ public function obtener_areas(Request $request)
         return response()->json([], 500);
     }
 }
+
+public function crear_licencia(Request $request)
+{
+    try {
+        // Validar los datos de entrada
+        $request->validate([
+            'fecha_emision' => 'required|date',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'jefe_vacaciones' => 'required|string|max:200',
+            'motivo' => 'required|string|max:500',
+            'id_area' => 'required|exists:area,id_area',
+            'id_trabajador' => 'required|exists:trabajador,id_trabajador',
+        ]);
+
+        // Crear la nueva licencia
+        $licencia = new Licencia();
+        $licencia->fecha_emision = $request->fecha_emision;
+        $licencia->fecha_inicio = $request->fecha_inicio;
+        $licencia->fecha_fin = $request->fecha_fin;
+        $licencia->jefe_vacaciones = $request->jefe_vacaciones;
+        $licencia->motivo = $request->motivo;
+        $licencia->id_area = $request->id_area;
+        $licencia->id_trabajador = $request->id_trabajador;
+        // Por defecto, asignamos un estado inicial (por ejemplo, 1 para 'Pendiente')
+        $licencia->id_estado_permiso = 1;
+
+        $licencia->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Licencia creada exitosamente',
+            'data' => new LicenciaResource($licencia)
+        ], Response::HTTP_CREATED);
+
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error de validación',
+            'errors' => $e->errors()
+        ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+    } catch (\Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al crear la licencia',
+            'error' => $e->getMessage()
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
 }
