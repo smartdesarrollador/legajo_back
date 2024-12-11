@@ -300,4 +300,66 @@ class VacacionesController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function solicitar_acumulacion_vacaciones(Request $request)
+    {
+        try {
+            \Log::info('Datos recibidos:', $request->all()); // Para debug
+
+            // Validar los datos de entrada
+            $validatedData = $request->validate([
+                'fecha_solicitud' => 'required|date',
+                'id_trabajador' => 'required|exists:trabajador,id_trabajador',
+                'periodo_acumulado' => 'required|string|max:20',
+            ]);
+
+            DB::beginTransaction();
+
+            // Crear el registro de vacaciones
+            $vacaciones = Vacaciones::create([
+                'fecha_solicitud' => $validatedData['fecha_solicitud'],
+                'id_trabajador' => $validatedData['id_trabajador'],
+                'id_tipo_vacaciones' => 9, // Asumiendo que 1 es el ID para acumulación de vacaciones
+            ]);
+
+            // Crear el registro de acumulación de vacaciones
+            $acumulacion = DB::table('f_acumulacion_vacaciones')->insert([
+                'fecha_acumulacion' => $validatedData['fecha_solicitud'],
+                'id_vacaciones' => $vacaciones->id_vacaciones,
+                'periodo_acumulado' => $validatedData['periodo_acumulado'],
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Crear estado de aprobación inicial (pendiente)
+            DB::table('estado_aprobacion')->insert([
+                'estado_aprobacion' => 'Pendiente',
+                'id_vacaciones' => $vacaciones->id_vacaciones,
+                'fecha_aprobacion' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud de acumulación de vacaciones creada exitosamente',
+                'data' => [
+                    'id_vacaciones' => $vacaciones->id_vacaciones,
+                    'fecha_solicitud' => $vacaciones->fecha_solicitud,
+                    'periodo_acumulado' => $validatedData['periodo_acumulado']
+                ]
+            ], Response::HTTP_CREATED);
+
+        } catch (\Exception $e) {
+            \Log::error('Error en solicitud_acumulacion_vacaciones: ' . $e->getMessage());
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la solicitud',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

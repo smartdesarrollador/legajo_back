@@ -15,3 +15,5 @@ Route::get('consulta-vacaciones-trabajadores', [VacacionesController::class, 'co
 Route::get('vacaciones/consultar-tipos-vacaciones', [VacacionesController::class, 'getTiposVacaciones']);
 
 Route::get('vacaciones/consultar-trabajadores', [VacacionesController::class, 'getTrabajadores']);
+
+Route::post('vacaciones/solicitar-acumulacion', [VacacionesController::class, 'solicitar_acumulacion_vacaciones']);
