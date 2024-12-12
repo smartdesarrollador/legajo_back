@@ -52,7 +52,7 @@ class PermisoController extends Controller
         // Cargar relaciones para optimizar los Resources
         $query->with(['trabajador', 'estadoPermiso', 'area']);
 
-        // Obtener los resultados paginados o todos (según el caso)
+        // Obtener los resultados paginados
         $permisos = $query->paginate(10);
 
         // Retornar los resultados usando el resource
