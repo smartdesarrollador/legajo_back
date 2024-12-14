@@ -299,4 +299,76 @@ public function crear_licencia(Request $request)
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
+
+public function editar_licencia(Request $request, $id)
+{
+    try {
+        // Validar los datos de entrada
+        $request->validate([
+            'fecha_emision' => 'required|date',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'jefe_vacaciones' => 'required|string|max:200',
+            'motivo' => 'required|string|max:500',
+            'id_area' => 'required|exists:area,id_area',
+            'id_trabajador' => 'required|exists:trabajador,id_trabajador',
+            'id_estado_permiso' => 'required|exists:estado_permiso,id_estado_permiso'
+        ]);
+
+        // Buscar la licencia
+        $licencia = Licencia::find($id);
+
+        if (!$licencia) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Licencia no encontrada'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Verificar que el trabajador pertenece al empleador correcto
+        $trabajador = DB::table('trabajador')
+            ->where('id_trabajador', $request->id_trabajador)
+            ->first();
+
+        if (!$trabajador) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Trabajador no encontrado'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Actualizar la licencia
+        $licencia->fecha_emision = $request->fecha_emision;
+        $licencia->fecha_inicio = $request->fecha_inicio;
+        $licencia->fecha_fin = $request->fecha_fin;
+        $licencia->jefe_vacaciones = $request->jefe_vacaciones;
+        $licencia->motivo = $request->motivo;
+        $licencia->id_area = $request->id_area;
+        $licencia->id_trabajador = $request->id_trabajador;
+        $licencia->id_estado_permiso = $request->id_estado_permiso;
+
+        $licencia->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Licencia actualizada exitosamente',
+            'data' => new LicenciaResource($licencia)
+        ], Response::HTTP_OK);
+
+    } catch (ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error de validación',
+            'errors' => $e->errors()
+        ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+    } catch (\Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al actualizar la licencia',
+            'error' => $e->getMessage()
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
 }

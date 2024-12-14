@@ -23,3 +23,6 @@ Route::get('licencia/obtener-areas', [LicenciaController::class, 'obtener_areas'
 // Crear licencia
 Route::post('/licencia/crear', [LicenciaController::class, 'crear_licencia']);
 
+// Editar licencia
+Route::put('/licencia/editar/{id}', [LicenciaController::class, 'editar_licencia']);
+
