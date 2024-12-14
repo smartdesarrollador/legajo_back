@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 
 
-Route::get('licencias', [LicenciaController::class, 'index']);
+Route::get('/licencias', [LicenciaController::class, 'index']);
+Route::get('/licencias/{id}', [LicenciaController::class, 'obtenerLicencia']);
 
 // Consulta de licencias de un determinado trabajador
 Route::get('consulta-licencia', [LicenciaController::class, 'consulta_licencia']);

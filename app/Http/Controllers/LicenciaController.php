@@ -371,4 +371,33 @@ public function editar_licencia(Request $request, $id)
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 }
+
+public function obtenerLicencia($id)
+{
+    try {
+        $licencia = Licencia::with(['area', 'trabajador', 'estadoPermiso'])
+            ->where('id_licencia', $id)
+            ->first();
+
+        if (!$licencia) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Licencia no encontrada'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $licencia
+        ], Response::HTTP_OK);
+
+    } catch (\Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener la licencia',
+            'error' => $e->getMessage()
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+    }
+}
 }
