@@ -14,7 +14,7 @@ class EmpleadorSeeder extends Seeder
     public function run(): void
     {
         DB::table('empleador')->insert([
-            ['empleador' => 'Empresa A',
+            ['empleador' => 'Estudio',
             'ruc' => '20456378901',
             'dni_representante_legal' => '456378901',
             'domicilio' => 'Av. Principal 123',
@@ -33,7 +33,7 @@ class EmpleadorSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now()],
             
-            ['empleador' => 'Empresa B',
+            ['empleador' => 'Empresa A',
             'ruc' => '20578965412',
             'dni_representante_legal' => '456378954',
             'domicilio' => 'Calle Secundaria 456',
@@ -52,7 +52,7 @@ class EmpleadorSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now()],
             
-            ['empleador' => 'Empresa C',
+            ['empleador' => 'Empresa B',
             'ruc' => '20578965894',
             'dni_representante_legal' => '456378418',
             'domicilio' => 'Calle Secundaria 451',

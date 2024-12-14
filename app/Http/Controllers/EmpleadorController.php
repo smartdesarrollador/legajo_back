@@ -293,52 +293,64 @@ public function updateEmpleador(Request $request, $id)
 
 
 public function listarEmpleadores()
-    {
-        // Recupera todos los empleadores y aplica el recurso para transformar la respuesta.
-        $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])->get();
+{
+    // Obtener el ID del primer empleador
+    $primerEmpleadorId = Empleador::min('id_empleador');
 
-        return response()->json(EmpleadorResource::collection($empleadores));
-    }
+    // Recupera todos los empleadores excepto el que tiene el ID más bajo
+    $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
+        ->where('id_empleador', '>', $primerEmpleadorId)
+        ->orderBy('id_empleador')
+        ->get();
+
+    return response()->json(EmpleadorResource::collection($empleadores));
+}
 
 public function searchByName(Request $request)
-    {
-        $query = $request->input('empleador');
+{
+    $query = $request->input('empleador');
+    $primerEmpleadorId = Empleador::min('id_empleador');
 
-        // Recupera los empleadores que coincidan con el nombre proporcionado.
-        $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
-            ->where('empleador', 'LIKE', "%{$query}%")
-            ->get();
+    $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
+        ->where('id_empleador', '>', $primerEmpleadorId)
+        ->where('empleador', 'LIKE', "%{$query}%")
+        ->orderBy('id_empleador')
+        ->get();
 
-        return response()->json(EmpleadorResource::collection($empleadores));
-    }
+    return response()->json(EmpleadorResource::collection($empleadores));
+}
 
-    public function searchByType(Request $request)
-    {
-        $tipoEmpleadorId = $request->input('tipo_empleador');
+public function searchByType(Request $request)
+{
+    $tipoEmpleadorId = $request->input('tipo_empleador');
+    $primerEmpleadorId = Empleador::min('id_empleador');
 
-        // Recupera los empleadores que coincidan con el tipo de empleador proporcionado.
-        $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
-            ->where('id_tipo_empleador', $tipoEmpleadorId)
-            ->get();
+    $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
+        ->where('id_empleador', '>', $primerEmpleadorId)
+        ->where('id_tipo_empleador', $tipoEmpleadorId)
+        ->orderBy('id_empleador')
+        ->get();
 
-        return response()->json(EmpleadorResource::collection($empleadores));
-    }
+    return response()->json(EmpleadorResource::collection($empleadores));
+}
 
-    public function search(Request $request)
-    {
-        $query = $request->input('empleador');
-        $tipoEmpleadorId = $request->input('tipo_empleador');
+public function search(Request $request)
+{
+    $query = $request->input('empleador');
+    $tipoEmpleadorId = $request->input('tipo_empleador');
+    $primerEmpleadorId = Empleador::min('id_empleador');
 
-        // Construye la consulta dependiendo de los parámetros proporcionados.
-        $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
-            ->when($query, function ($q) use ($query) {
-                $q->where('empleador', 'LIKE', "%{$query}%");
-            })
-            ->when($tipoEmpleadorId, function ($q) use ($tipoEmpleadorId) {
-                $q->where('id_tipo_empleador', $tipoEmpleadorId);
-            })
-            ->get();
+    $empleadores = Empleador::with(['tipoEmpleador', 'actividadEconomica'])
+        ->where('id_empleador', '>', $primerEmpleadorId)
+        ->when($query, function ($q) use ($query) {
+            $q->where('empleador', 'LIKE', "%{$query}%");
+        })
+        ->when($tipoEmpleadorId, function ($q) use ($tipoEmpleadorId) {
+            $q->where('id_tipo_empleador', $tipoEmpleadorId);
+        })
+        ->orderBy('id_empleador')
+        ->get();
 
-        return response()->json(EmpleadorResource::collection($empleadores));
-    }
+    return response()->json(EmpleadorResource::collection($empleadores));
+}
 }
