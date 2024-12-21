@@ -23,4 +23,7 @@ Route::prefix('contratos')->group(function () {
 
     // Ruta para obtener los detalles de un contrato específico (show)
     Route::get('/{id}', [ContratoController::class, 'show']);
+
+    // Ruta para crear un nuevo contrato
+    Route::post('/crear', [ContratoController::class, 'crear_contrato']);
 });
