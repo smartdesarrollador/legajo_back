@@ -13,6 +13,7 @@ use App\Models\Cargo;
 use App\Models\Funciones;
 use App\Models\RegimenLaboral;
 use App\Models\TipoContrato;
+use App\Models\ContratoDetalle;
 
 class Contrato extends Model
 {
@@ -71,5 +72,13 @@ class Contrato extends Model
     public function tipoContrato()
     {
         return $this->belongsTo(TipoContrato::class, 'id_tipo_contrato');
+    }
+
+    /**
+     * Obtiene el detalle asociado al contrato
+     */
+    public function detalle()
+    {
+        return $this->hasOne(ContratoDetalle::class, 'id_contrato', 'id_contrato');
     }
 }

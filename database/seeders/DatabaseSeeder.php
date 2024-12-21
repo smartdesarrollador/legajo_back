@@ -98,6 +98,7 @@ class DatabaseSeeder extends Seeder
             DenunciaSeeder::class,
             DenunciaDSeeder::class,
             ContratoSeeder::class,
+            ContratoDetalleSeeder::class,
             DeliverySeeder::class,
             PermisoSeeder::class,
             LicenciaSeeder::class,
