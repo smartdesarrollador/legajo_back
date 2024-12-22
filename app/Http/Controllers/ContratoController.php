@@ -275,24 +275,66 @@ class ContratoController extends Controller
         try {
             Log::info('Datos recibidos:', $request->all());
 
-            // Validar los datos recibidos
+            // Función auxiliar para mapear días a números
+            $mapearDia = function($dia) {
+                $dias = [
+                    'lunes' => 1,
+                    'martes' => 2,
+                    'miércoles' => 3,
+                    'jueves' => 4,
+                    'viernes' => 5,
+                    'sábado' => 6,
+                    'domingo' => 7
+                ];
+                return $dias[strtolower($dia)] ?? 1;
+            };
+
+            // Convertir los días a números antes de validar
+            $request->merge([
+                'dia_inicio' => $mapearDia($request->dia_inicio),
+                'dia_final' => $mapearDia($request->dia_final)
+            ]);
+
             $validatedData = $request->validate([
                 'id_trabajador' => 'required|exists:trabajador,id_trabajador',
                 'id_empleador' => 'required|exists:empleador,id_empleador',
                 'jornada' => 'required|exists:jornada_laboral,id_jornada_laboral',
                 'tipo_contrato' => 'required|exists:tipo_contrato,id_tipo_contrato',
                 'fecha_periodo' => 'required|date_format:Y-m-d',
+                'fecha_suplencia' => 'nullable|date_format:Y-m-d',
+                'horario_inicio' => 'nullable|string',
+                'horario_final' => 'nullable|string',
                 // Campos opcionales
                 'oferta_laboral' => 'nullable|string|max:500',
                 'motivo_contrato' => 'nullable|string|max:500',
                 'evidencia_documentaria' => 'nullable|string|max:500',
-                'fecha_suplencia' => 'nullable|date_format:Y-m-d',
-                // ... resto de validaciones
+                'evidencia_contrato_temporada' => 'nullable|string|max:500',
+                'remuneracion' => 'nullable|numeric',
+                'trabajador_confianza' => 'nullable|boolean',
+                'trabajador_direccion' => 'nullable|boolean',
+                'pregunta_1' => 'nullable|boolean',
+                'pregunta_2' => 'nullable|boolean',
+                'pregunta_3' => 'nullable|boolean',
+                'fiscalizacion_inmediata' => 'nullable|boolean',
+                'jornada_maxima' => 'nullable|boolean',
+                'dia_inicio' => 'required|integer|between:1,7',
+                'dia_final' => 'required|integer|between:1,7',
+                'prevencion_covid' => 'nullable|boolean',
+                'obligaciones_compromisos' => 'nullable|boolean',
+                'confidencialidad' => 'nullable|boolean',
+                'propiedad_intelectual' => 'nullable|boolean',
+                'tecnologia_informacion' => 'nullable|boolean',
+                'exclusividad' => 'nullable|boolean',
+                'proteccion_datos' => 'nullable|boolean'
             ]);
 
             DB::beginTransaction();
 
             try {
+                // Formatear las horas antes de guardar
+                $horarioInicio = $request->horario_inicio ? date('H:i:s', strtotime($request->horario_inicio)) : null;
+                $horarioFinal = $request->horario_final ? date('H:i:s', strtotime($request->horario_final)) : null;
+
                 $contrato = Contrato::create([
                     'id_empleador' => $request->id_empleador,
                     'id_trabajador' => $request->id_trabajador,
@@ -304,16 +346,40 @@ class ContratoController extends Controller
                     'observacion' => 'Contrato creado el ' . now()->format('Y-m-d'),
                 ]);
 
-                Log::info('Contrato creado:', $contrato->toArray());
-
                 $contratoDetalle = $contrato->detalle()->create([
                     'oferta_laboral' => $request->oferta_laboral ?? '',
                     'motivo_contrato' => $request->motivo_contrato ?? '',
                     'evidencia_documentaria' => $request->evidencia_documentaria ?? '',
-                    // ... otros campos con valores por defecto
+                    'fecha_suplencia' => $request->fecha_suplencia,
+                    'genero_suplencia' => $request->genero_suplencia,
+                    'proyecto_obra_determinada' => $request->proyecto_obra_determinada,
+                    'ubicacion_obra_determinada' => $request->ubicacion_obra_determinada,
+                    'objeto_servicio_especifico' => $request->objeto_servicio_especifico,
+                    'nombre_servicio_especifico' => $request->nombre_servicio_especifico,
+                    'locacion_servicio_especifico' => $request->locacion_servicio_especifico,
+                    'objeto_contrato_temporada' => $request->objeto_contrato_temporada,
+                    'motivo_contrato_temporada' => $request->motivo_contrato_temporada,
+                    'evidencia_contrato_temporada' => $request->evidencia_contrato_temporada,
+                    'remuneracion' => $request->remuneracion,
+                    'trabajador_confianza' => $request->trabajador_confianza ?? false,
+                    'trabajador_direccion' => $request->trabajador_direccion ?? false,
+                    'pregunta_1' => $request->pregunta_1 ?? false,
+                    'pregunta_2' => $request->pregunta_2 ?? false,
+                    'pregunta_3' => $request->pregunta_3 ?? false,
+                    'fiscalizacion_inmediata' => $request->fiscalizacion_inmediata ?? false,
+                    'jornada_maxima' => $request->jornada_maxima ?? false,
+                    'dia_inicio' => $request->dia_inicio,
+                    'dia_final' => $request->dia_final,
+                    'horario_inicio' => $horarioInicio,
+                    'horario_final' => $horarioFinal,
+                    'prevencion_covid' => $request->prevencion_covid ?? false,
+                    'obligaciones_compromisos' => $request->obligaciones_compromisos ?? false,
+                    'confidencialidad' => $request->confidencialidad ?? false,
+                    'propiedad_intelectual' => $request->propiedad_intelectual ?? false,
+                    'tecnologia_informacion' => $request->tecnologia_informacion ?? false,
+                    'exclusividad' => $request->exclusividad ?? false,
+                    'proteccion_datos' => $request->proteccion_datos ?? false
                 ]);
-
-                Log::info('Detalle de contrato creado:', $contratoDetalle->toArray());
 
                 DB::commit();
 
@@ -333,17 +399,8 @@ class ContratoController extends Controller
                 throw $e;
             }
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Error de validación: ' . json_encode($e->errors()));
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors()
-            ], Response::HTTP_BAD_REQUEST);
-
         } catch (\Exception $e) {
             Log::error('Error general: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear el contrato: ' . $e->getMessage(),
