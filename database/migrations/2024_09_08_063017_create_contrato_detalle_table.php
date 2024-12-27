@@ -30,9 +30,9 @@ return new class extends Migration
             $table->decimal('remuneracion', 10, 2)->nullable();
             $table->boolean('trabajador_confianza')->default(false);
             $table->boolean('trabajador_direccion')->default(false);
-            $table->boolean('pregunta_1')->default(false);
-            $table->boolean('pregunta_2')->default(false);
-            $table->boolean('pregunta_3')->default(false);
+            $table->string('pregunta_1', 500)->nullable();
+            $table->string('pregunta_2', 500)->nullable();
+            $table->string('pregunta_3', 500)->nullable();
             $table->boolean('fiscalizacion_inmediata')->default(false);
             $table->boolean('jornada_maxima')->default(false);
             $table->string('dia_inicio', 50)->nullable();
