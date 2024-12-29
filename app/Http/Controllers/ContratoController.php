@@ -289,12 +289,6 @@ class ContratoController extends Controller
                 return $dias[strtolower($dia)] ?? 1;
             };
 
-            // Convertir los días a números antes de validar
-            $request->merge([
-                'dia_inicio' => $mapearDia($request->dia_inicio),
-                'dia_final' => $mapearDia($request->dia_final)
-            ]);
-
             $validatedData = $request->validate([
                 'id_trabajador' => 'required|exists:trabajador,id_trabajador',
                 'id_empleador' => 'required|exists:empleador,id_empleador',
@@ -302,23 +296,30 @@ class ContratoController extends Controller
                 'tipo_contrato' => 'required|exists:tipo_contrato,id_tipo_contrato',
                 'fecha_periodo' => 'required|date_format:Y-m-d',
                 'fecha_suplencia' => 'nullable|date_format:Y-m-d',
-                'horario_inicio' => 'nullable|string',
-                'horario_final' => 'nullable|string',
-                // Campos opcionales
+                'horario_inicio' => ['nullable', 'date_format:H:i:s'],
+                'horario_final' => ['nullable', 'date_format:H:i:s'],
                 'oferta_laboral' => 'nullable|string|max:500',
                 'motivo_contrato' => 'nullable|string|max:500',
                 'evidencia_documentaria' => 'nullable|string|max:500',
+                'genero_suplencia' => 'nullable|string|max:100',
+                'proyecto_obra_determinada' => 'nullable|string|max:500',
+                'ubicacion_obra_determinada' => 'nullable|string|max:500',
+                'objeto_servicio_especifico' => 'nullable|string|max:500',
+                'nombre_servicio_especifico' => 'nullable|string|max:500',
+                'locacion_servicio_especifico' => 'nullable|string|max:500',
+                'objeto_contrato_temporada' => 'nullable|string|max:500',
+                'motivo_contrato_temporada' => 'nullable|string|max:500',
                 'evidencia_contrato_temporada' => 'nullable|string|max:500',
-                'remuneracion' => 'nullable|numeric',
+                'remuneracion' => 'nullable|numeric|decimal:0,2',
                 'trabajador_confianza' => 'nullable|boolean',
                 'trabajador_direccion' => 'nullable|boolean',
-                'pregunta_1' => 'nullable|boolean',
-                'pregunta_2' => 'nullable|boolean',
-                'pregunta_3' => 'nullable|boolean',
+                'pregunta_1' => 'nullable|string|max:500',
+                'pregunta_2' => 'nullable|string|max:500',
+                'pregunta_3' => 'nullable|string|max:500',
                 'fiscalizacion_inmediata' => 'nullable|boolean',
                 'jornada_maxima' => 'nullable|boolean',
-                'dia_inicio' => 'required|integer|between:1,7',
-                'dia_final' => 'required|integer|between:1,7',
+                'dia_inicio' => 'required|string|max:50',
+                'dia_final' => 'required|string|max:50',
                 'prevencion_covid' => 'nullable|boolean',
                 'obligaciones_compromisos' => 'nullable|boolean',
                 'confidencialidad' => 'nullable|boolean',
@@ -326,6 +327,15 @@ class ContratoController extends Controller
                 'tecnologia_informacion' => 'nullable|boolean',
                 'exclusividad' => 'nullable|boolean',
                 'proteccion_datos' => 'nullable|boolean'
+            ], [
+                'dia_inicio.required' => 'El día de inicio es obligatorio',
+                'dia_final.required' => 'El día final es obligatorio',
+            ]);
+
+            // Para debug
+            Log::info('Días recibidos:', [
+                'dia_inicio' => $request->dia_inicio,
+                'dia_final' => $request->dia_final
             ]);
 
             DB::beginTransaction();
