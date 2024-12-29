@@ -419,4 +419,105 @@ class ContratoController extends Controller
         }
     }
 
+    /**
+     * Obtener datos detallados del contrato para generar documento
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function obtenerDatosDocumento($id)
+    {
+        try {
+            $contrato = Contrato::with([
+                'empleador',
+                'trabajador.area',
+                'estadoContrato',
+                'jornadaLaboral',
+                'cargo',
+                'funciones',
+                'regimenLaboral',
+                'tipoContrato',
+                'detalle'
+            ])->findOrFail($id);
+
+            // Formatear los datos necesarios para el documento
+            $datosDocumento = [
+                'contrato' => [
+                    'numero' => $contrato->id_contrato,
+                    'fecha_inicio' => $contrato->fecha_inicio,
+                    'fecha_fin' => $contrato->fecha_fin,
+                    'observacion' => $contrato->observacion,
+                    'estado' => $contrato->estadoContrato->nombre,
+                    'tipo_contrato' => $contrato->tipoContrato->nombre,
+                    'jornada_laboral' => $contrato->jornadaLaboral->nombre,
+                ],
+                'empleador' => [
+                    'nombre' => $contrato->empleador->nombre,
+                    'ruc' => $contrato->empleador->ruc,
+                    'direccion' => $contrato->empleador->direccion,
+                    'representante_legal' => $contrato->empleador->representante_legal,
+                ],
+                'trabajador' => [
+                    'nombres' => $contrato->trabajador->nombres,
+                    'apellidos' => $contrato->trabajador->apellidos,
+                    'dni' => $contrato->trabajador->dni,
+                    'direccion' => $contrato->trabajador->direccion,
+                    'area' => $contrato->trabajador->area->nombre,
+                    'cargo' => $contrato->cargo->nombre,
+                    'funciones' => $contrato->funciones->descripcion,
+                ],
+                'detalle' => [
+                    'remuneracion' => $contrato->detalle->remuneracion,
+                    'horario_inicio' => $contrato->detalle->horario_inicio,
+                    'horario_final' => $contrato->detalle->horario_final,
+                    'dia_inicio' => $contrato->detalle->dia_inicio,
+                    'dia_final' => $contrato->detalle->dia_final,
+                    'oferta_laboral' => $contrato->detalle->oferta_laboral,
+                    'motivo_contrato' => $contrato->detalle->motivo_contrato,
+                    'evidencia_documentaria' => $contrato->detalle->evidencia_documentaria,
+                    'fecha_suplencia' => $contrato->detalle->fecha_suplencia,
+                    'genero_suplencia' => $contrato->detalle->genero_suplencia,
+                    'proyecto_obra_determinada' => $contrato->detalle->proyecto_obra_determinada,
+                    'ubicacion_obra_determinada' => $contrato->detalle->ubicacion_obra_determinada,
+                    'objeto_servicio_especifico' => $contrato->detalle->objeto_servicio_especifico,
+                    'nombre_servicio_especifico' => $contrato->detalle->nombre_servicio_especifico,
+                    'locacion_servicio_especifico' => $contrato->detalle->locacion_servicio_especifico,
+                    'objeto_contrato_temporada' => $contrato->detalle->objeto_contrato_temporada,
+                    'motivo_contrato_temporada' => $contrato->detalle->motivo_contrato_temporada,
+                    'evidencia_contrato_temporada' => $contrato->detalle->evidencia_contrato_temporada,
+                ],
+                'condiciones' => [
+                    'trabajador_confianza' => $contrato->detalle->trabajador_confianza,
+                    'trabajador_direccion' => $contrato->detalle->trabajador_direccion,
+                    'pregunta_1' => $contrato->detalle->pregunta_1,
+                    'pregunta_2' => $contrato->detalle->pregunta_2,
+                    'pregunta_3' => $contrato->detalle->pregunta_3,
+                    'fiscalizacion_inmediata' => $contrato->detalle->fiscalizacion_inmediata,
+                    'jornada_maxima' => $contrato->detalle->jornada_maxima,
+                    'prevencion_covid' => $contrato->detalle->prevencion_covid,
+                    'obligaciones_compromisos' => $contrato->detalle->obligaciones_compromisos,
+                    'confidencialidad' => $contrato->detalle->confidencialidad,
+                    'propiedad_intelectual' => $contrato->detalle->propiedad_intelectual,
+                    'tecnologia_informacion' => $contrato->detalle->tecnologia_informacion,
+                    'exclusividad' => $contrato->detalle->exclusividad,
+                    'proteccion_datos' => $contrato->detalle->proteccion_datos,
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Datos del contrato obtenidos exitosamente',
+                'data' => $datosDocumento
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al obtener datos del contrato: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los datos del contrato',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

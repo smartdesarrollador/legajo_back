@@ -26,4 +26,7 @@ Route::prefix('contratos')->group(function () {
 
     // Ruta para crear un nuevo contrato
     Route::post('/crear', [ContratoController::class, 'crear_contrato']);
+
+    // Ruta para obtener datos para generar documento Word
+    Route::get('/{id}/documento', [ContratoController::class, 'obtenerDatosDocumento']);
 });
