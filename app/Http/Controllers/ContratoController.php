@@ -18,6 +18,8 @@ use App\Http\Resources\TipoContratoResource;
 use App\Http\Resources\TrabajadorResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Notificacion;
 
 
 class ContratoController extends Controller
@@ -390,6 +392,20 @@ class ContratoController extends Controller
                     'exclusividad' => $request->exclusividad ?? false,
                     'proteccion_datos' => $request->proteccion_datos ?? false
                 ]);
+
+                // Obtener el trabajador
+                $trabajador = Trabajador::findOrFail($request->id_trabajador);
+
+                // Enviar el correo de notificación solo si el tipo de contrato es 2
+                if ($request->tipo_contrato == 2 &&  $trabajador->correo) {
+                    try {
+                        Mail::to($trabajador->correo)->send(new Notificacion($trabajador));
+                        Log::info('Correo de notificación enviado a: ' . $trabajador->correo);
+                    } catch (\Exception $e) {
+                        Log::error('Error al enviar el correo: ' . $e->getMessage());
+                        // No lanzamos la excepción para que el contrato se cree de todas formas
+                    }
+                }
 
                 DB::commit();
 
