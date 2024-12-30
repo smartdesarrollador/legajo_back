@@ -456,31 +456,31 @@ class ContratoController extends Controller
                 'detalle'
             ])->findOrFail($id);
 
-            // Formatear los datos necesarios para el documento
+            // Formatear los datos según la estructura real de las tablas
             $datosDocumento = [
                 'contrato' => [
                     'numero' => $contrato->id_contrato,
                     'fecha_inicio' => $contrato->fecha_inicio,
                     'fecha_fin' => $contrato->fecha_fin,
                     'observacion' => $contrato->observacion,
-                    'estado' => $contrato->estadoContrato->nombre,
-                    'tipo_contrato' => $contrato->tipoContrato->nombre,
-                    'jornada_laboral' => $contrato->jornadaLaboral->nombre,
+                    'estado' => $contrato->estadoContrato->estado_contrato,
+                    'tipo_contrato' => $contrato->tipoContrato->tipo_contrato,
+                    'jornada_laboral' => $contrato->jornadaLaboral->jornada_laboral,
                 ],
                 'empleador' => [
-                    'nombre' => $contrato->empleador->nombre,
+                    'nombre' => $contrato->empleador->empleador,
                     'ruc' => $contrato->empleador->ruc,
-                    'direccion' => $contrato->empleador->direccion,
+                    'domicilio' => $contrato->empleador->domicilio,
                     'representante_legal' => $contrato->empleador->representante_legal,
                 ],
                 'trabajador' => [
-                    'nombres' => $contrato->trabajador->nombres,
-                    'apellidos' => $contrato->trabajador->apellidos,
-                    'dni' => $contrato->trabajador->dni,
+                    'nombres' => $contrato->trabajador->primer . ' ' . $contrato->trabajador->segundo,
+                    'apellidos' => $contrato->trabajador->paterno . ' ' . $contrato->trabajador->materno,
+                    'numero_documento' => $contrato->trabajador->numero_documento,
                     'direccion' => $contrato->trabajador->direccion,
-                    'area' => $contrato->trabajador->area->nombre,
-                    'cargo' => $contrato->cargo->nombre,
-                    'funciones' => $contrato->funciones->descripcion,
+                    'area' => $contrato->trabajador->area->area,
+                    'cargo' => $contrato->cargo->cargo,
+                    'funciones' => $contrato->funciones->funciones,
                 ],
                 'detalle' => [
                     'remuneracion' => $contrato->detalle->remuneracion,
