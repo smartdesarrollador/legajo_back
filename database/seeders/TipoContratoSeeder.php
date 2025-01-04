@@ -15,7 +15,7 @@ class TipoContratoSeeder extends Seeder
     {
         DB::table('tipo_contrato')->insert([
         ['tipo_contrato' => 'Indeterminado', 'created_at' => now(), 'updated_at' => now()],
-        ['tipo_contrato' => 'A plazo fijo', 'created_at' => now(), 'updated_at' => now()],
+        ['tipo_contrato' => 'Modal', 'created_at' => now(), 'updated_at' => now()],
     ]);
     }
 }
